@@ -7,7 +7,7 @@ set -e
 
 # Setup the control plane
 kubeadm config images pull
-kubeadm init --apiserver-advertise-address=192.168.50.10 --control-plane-endpoint=control --pod-network-cidr 10.0.0.0/16
+kubeadm init --apiserver-advertise-address=192.168.50.10 --control-plane-endpoint=control # --pod-network-cidr 10.0.0.0/16
 
 # Configure kubectl
 mkdir -p ~/.kube
@@ -26,6 +26,16 @@ kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl versio
 
 # Wait for networking pods to be up and running
 kubectl wait --for='condition=Ready' pod --all=true --namespace=kube-system --timeout=600s
+
+# Helm repository
+curl https://helm.baltorepo.com/organization/signing.asc | apt-key add -
+echo "deb https://baltocdn.com/helm/stable/debian/ all main" > /etc/apt/sources.list.d/helm-stable-debian.list
+apt-get update
+apt-get install -y helm
+
+# Add charts repository 
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+helm repo update
 
 # Done setting control plane
 exit 0
